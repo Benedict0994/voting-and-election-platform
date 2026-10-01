@@ -1,186 +1,68 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import {
-  LayoutDashboard,
-  Users,
-  Settings as SettingsIcon,
-  UserCircle,
-  LogOut,
-  Vote,
-  X,
-} from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { LayoutDashboard, Users, Settings as SettingsIcon, UserCircle, LogOut, Vote, Plus, ExternalLink } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
 import useAuth from "@/context/useAuth";
 
 const links = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  { to: "/dashboard", label: "Overview", icon: LayoutDashboard },
   { to: "/candidates", label: "Candidates", icon: Users },
-  { to: "/settings", label: "Settings", icon: SettingsIcon },
-  { to: "/profile", label: "Profile", icon: UserCircle },
+  { to: "/settings", label: "Election settings", icon: SettingsIcon },
+  { to: "/profile", label: "Account", icon: UserCircle },
 ];
 
-interface Props {
-  onNavigate?: () => void;
-  onClose?: () => void;
-  layout?: "vertical" | "horizontal";
-}
+interface Props { onNavigate?: () => void; onClose?: () => void; layout?: "vertical" | "horizontal"; }
 
-export default function Sidebar({ onNavigate, onClose, layout = "vertical" }: Props) {
+export default function Sidebar({ onNavigate, layout = "vertical" }: Props) {
   const { logoutUser, user } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
+  const initials = user?.name ? user.name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2) : "AV";
+  const active = (path: string) => location.pathname === path || (path !== "/dashboard" && location.pathname.startsWith(path));
+  const logout = () => { logoutUser(); navigate("/login"); };
 
-  function handleLogout() {
-    logoutUser();
-    navigate("/login");
-  }
-
-  const initials = user?.name
-    ? user.name
-        .split(" ")
-        .map((n) => n[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "AD";
-
-  // Vertical layout for desktop
-  if (layout === "vertical") {
+  if (layout === "horizontal") {
     return (
-      <div className="flex h-full flex-col bg-sidebar text-sidebar-foreground">
-        <div className="flex items-center gap-3 px-5 py-5">
-          <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-            <Vote size={18} />
-          </div>
-          <div>
-            <h1 className="text-sm font-semibold tracking-tight">AwardVote</h1>
-            <p className="text-xs text-muted-foreground">Admin Panel</p>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="px-4 py-4">
-          <div className="flex items-center gap-3 rounded-lg bg-muted/50 p-3">
-            <Avatar className="h-8 w-8">
-              <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-                {initials}
-              </AvatarFallback>
-            </Avatar>
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-sm font-medium">
-                {user?.name || "Admin"}
-              </p>
-              <p className="truncate text-xs text-muted-foreground">
-                {user?.email || "admin@example.com"}
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <Separator />
-
-        <nav className="flex-1 space-y-1 px-3 py-4">
-          {links.map((link) => {
-            const Icon = link.icon;
-            const active = location.pathname === link.to;
-
-            return (
-              <Button
-                key={link.to}
-                variant={active ? "secondary" : "ghost"}
-                className={`w-full justify-start gap-3 ${
-                  active ? "font-semibold" : "font-normal"
-                }`}
-                render={<Link to={link.to} onClick={onNavigate} />}
-              >
-                <Icon size={16} />
-                {link.label}
-              </Button>
-            );
-          })}
-        </nav>
-
-        <Separator />
-
-        <div className="p-3">
-          <Button
-            variant="ghost"
-            className="w-full justify-start gap-3 text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={handleLogout}
-          >
-            <LogOut size={16} />
-            Sign Out
-          </Button>
-        </div>
-      </div>
+      <nav className="grid h-[72px] grid-cols-4 bg-[#11152b] px-2 text-white">
+        {links.map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} onClick={onNavigate} className={`flex flex-col items-center justify-center gap-1 text-[10px] font-medium ${active(to) ? "text-[#a998ff]" : "text-slate-400"}`}>
+            <Icon size={20} />
+            <span>{label === "Election settings" ? "Settings" : label}</span>
+          </Link>
+        ))}
+      </nav>
     );
   }
 
-  // Horizontal layout for mobile
   return (
-    <div className="flex h-20 items-center justify-between gap-2 bg-sidebar px-4 py-3 text-sidebar-foreground">
-      {/* Navigation items */}
-      <nav className="flex flex-1 items-center justify-center gap-8">
-        {links.map((link) => {
-          const Icon = link.icon;
-          const active = location.pathname === link.to;
+    <div className="flex h-full flex-col bg-sidebar px-3 py-4 text-sidebar-foreground">
+      <Link to="/dashboard" className="mb-7 flex items-center gap-3 px-2">
+        <div className="grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br from-[#8b76ff] to-[#5b3df5] shadow-lg shadow-violet-950/30"><Vote size={20} /></div>
+        <div><div className="text-base font-bold tracking-tight">AwardVote</div><div className="text-[11px] text-slate-400">Election control center</div></div>
+      </Link>
 
-          return (
-            <Link
-              key={link.to}
-              to={link.to}
-              onClick={onNavigate}
-              className="flex flex-col items-center gap-1 rounded-lg p-2 transition-colors"
-            >
-              <Icon
-                size={24}
-                className={`${
-                  active
-                    ? "text-primary"
-                    : "text-sidebar-foreground hover:text-primary"
-                }`}
-              />
-              <span className="text-xs font-medium">{link.label}</span>
-            </Link>
-          );
-        })}
+      <Link to="/candidates/add" className="mb-6 flex items-center justify-center gap-2 rounded-xl bg-white px-3 py-2.5 text-sm font-semibold text-[#11152b] transition hover:bg-violet-50">
+        <Plus size={17} /> Add candidate
+      </Link>
+
+      <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-[.18em] text-slate-500">Workspace</p>
+      <nav className="space-y-1">
+        {links.map(({ to, label, icon: Icon }) => (
+          <Link key={to} to={to} onClick={onNavigate} className={`flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm transition ${active(to) ? "bg-sidebar-accent font-semibold text-white shadow-sm" : "text-slate-400 hover:bg-white/5 hover:text-white"}`}>
+            <Icon size={18} />{label}
+          </Link>
+        ))}
       </nav>
 
-      {/* User profile section */}
-      <div className="flex items-center gap-3 rounded-full bg-muted/50 px-3 py-2">
-        <Avatar className="h-8 w-8">
-          <AvatarFallback className="bg-primary/10 text-xs font-semibold text-primary">
-            {initials}
-          </AvatarFallback>
-        </Avatar>
-        <div className="hidden flex-col sm:flex">
-          <p className="text-xs font-medium">{user?.name || "Admin"}</p>
+      <div className="mt-auto space-y-3">
+        <div className="rounded-2xl border border-white/10 bg-white/[.04] p-3">
+          <div className="mb-3 flex items-center gap-3">
+            <Avatar className="h-9 w-9"><AvatarFallback className="bg-[#2b3153] text-xs font-bold text-white">{initials}</AvatarFallback></Avatar>
+            <div className="min-w-0"><p className="truncate text-sm font-semibold">{user?.name || "Administrator"}</p><p className="truncate text-[11px] text-slate-400">{user?.email || "Election administrator"}</p></div>
+          </div>
+          <Link to="/" className="flex items-center gap-2 text-xs font-medium text-slate-400 transition hover:text-white"><ExternalLink size={14}/> View public site</Link>
         </div>
+        <button onClick={logout} className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm text-slate-400 transition hover:bg-red-500/10 hover:text-red-300"><LogOut size={17}/> Sign out</button>
       </div>
-
-      {/* Logout button */}
-      <Button
-        variant="ghost"
-        size="icon"
-        className="text-destructive hover:bg-destructive/10 hover:text-destructive"
-        onClick={handleLogout}
-      >
-        <LogOut size={18} />
-      </Button>
-
-      {/* Close button */}
-      {onClose && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onClose}
-          className="text-sidebar-foreground hover:bg-muted"
-        >
-          <X size={18} />
-        </Button>
-      )}
     </div>
   );
 }
