@@ -1,0 +1,12 @@
+node_modules/
+**/node_modules/
+
+.env
+.env.*
+!.env.example
+server/.env
+
+dist/
+**/dist/
+.claude/
+server/uploads/

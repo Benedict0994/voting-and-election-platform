@@ -1,0 +1,135 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+    --font-heading: var(--font-sans);
+    --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+    --color-sidebar-ring: var(--sidebar-ring);
+    --color-sidebar-border: var(--sidebar-border);
+    --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+    --color-sidebar-accent: var(--sidebar-accent);
+    --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+    --color-sidebar-primary: var(--sidebar-primary);
+    --color-sidebar-foreground: var(--sidebar-foreground);
+    --color-sidebar: var(--sidebar);
+    --color-chart-5: var(--chart-5);
+    --color-chart-4: var(--chart-4);
+    --color-chart-3: var(--chart-3);
+    --color-chart-2: var(--chart-2);
+    --color-chart-1: var(--chart-1);
+    --color-ring: var(--ring);
+    --color-input: var(--input);
+    --color-border: var(--border);
+    --color-destructive: var(--destructive);
+    --color-accent-foreground: var(--accent-foreground);
+    --color-accent: var(--accent);
+    --color-muted-foreground: var(--muted-foreground);
+    --color-muted: var(--muted);
+    --color-secondary-foreground: var(--secondary-foreground);
+    --color-secondary: var(--secondary);
+    --color-primary-foreground: var(--primary-foreground);
+    --color-primary: var(--primary);
+    --color-popover-foreground: var(--popover-foreground);
+    --color-popover: var(--popover);
+    --color-card-foreground: var(--card-foreground);
+    --color-card: var(--card);
+    --color-foreground: var(--foreground);
+    --color-background: var(--background);
+    --color-hero: var(--hero);
+    --color-orange-light: var(--orange-light);
+    --color-teal: var(--teal);
+    --radius-sm: calc(var(--radius) * 0.6);
+    --radius-md: calc(var(--radius) * 0.8);
+    --radius-lg: var(--radius);
+    --radius-xl: calc(var(--radius) * 1.4);
+    --radius-2xl: calc(var(--radius) * 1.8);
+    --radius-3xl: calc(var(--radius) * 2.2);
+    --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+:root {
+    --background: #ffffff;
+    --foreground: #191248;
+    --card: #ffffff;
+    --card-foreground: #191248;
+    --popover: #ffffff;
+    --popover-foreground: #191248;
+    --primary: #f16722;
+    --primary-foreground: #ffffff;
+    --secondary: #f4f5f9;
+    --secondary-foreground: #191248;
+    --muted: #f4f5f9;
+    --muted-foreground: #6e6c83;
+    --accent: #ffa046;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --border: #e5e7eb;
+    --input: #e5e7eb;
+    --ring: #f16722;
+    --chart-1: #f16722;
+    --chart-2: #ffa046;
+    --chart-3: #52db97;
+    --chart-4: #5853e1;
+    --chart-5: #3c82f6;
+    --radius: 0.625rem;
+    --hero: #191248;
+    --orange-light: #ffa046;
+    --teal: #066d6d;
+    --sidebar: #191248;
+    --sidebar-foreground: #ffffff;
+    --sidebar-primary: #f16722;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #2a2260;
+    --sidebar-accent-foreground: #ffffff;
+    --sidebar-border: #2a2260;
+    --sidebar-ring: #f16722;
+}
+
+.dark {
+    --background: #0f0b2e;
+    --foreground: #f4f5f9;
+    --card: #191248;
+    --card-foreground: #f4f5f9;
+    --popover: #191248;
+    --popover-foreground: #f4f5f9;
+    --primary: #f16722;
+    --primary-foreground: #ffffff;
+    --secondary: #2a2260;
+    --secondary-foreground: #f4f5f9;
+    --muted: #2a2260;
+    --muted-foreground: #9d9bb0;
+    --accent: #ffa046;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --border: rgba(255, 255, 255, 0.1);
+    --input: rgba(255, 255, 255, 0.15);
+    --ring: #f16722;
+    --chart-1: #f16722;
+    --chart-2: #ffa046;
+    --chart-3: #52db97;
+    --chart-4: #5853e1;
+    --chart-5: #3c82f6;
+    --teal: #088f8f;
+    --sidebar: #0f0b2e;
+    --sidebar-foreground: #f4f5f9;
+    --sidebar-primary: #f16722;
+    --sidebar-primary-foreground: #ffffff;
+    --sidebar-accent: #2a2260;
+    --sidebar-accent-foreground: #f4f5f9;
+    --sidebar-border: rgba(255, 255, 255, 0.1);
+    --sidebar-ring: #f16722;
+}
+
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+  html {
+    @apply font-sans;
+  }
+}
