@@ -1,239 +1,35 @@
 import { useEffect, useState } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Vote, ArrowLeft } from "lucide-react";
+import { Vote, ArrowLeft, CheckCircle2, Clock3, ShieldCheck } from "lucide-react";
 import API from "../services/api";
 import type { Candidate, Settings } from "../types";
 import { getImageUrl } from "../utils/getImageUrl";
 import CategoryComparisonChart from "../components/charts/ComparisonChart";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 
 export default function CandidatePublicView() {
   const { slug } = useParams();
+  const [candidate,setCandidate]=useState<Candidate|null>(null), [categoryCandidates,setCategoryCandidates]=useState<Candidate[]>([]), [settings,setSettings]=useState<Settings|null>(null), [loading,setLoading]=useState(true), [votingFor,setVotingFor]=useState<string|null>(null), [voteMessage,setVoteMessage]=useState("");
+  useEffect(()=>{(async()=>{try{const res=await API.get(`/candidates/public/${slug}`);setCandidate(res.data.candidate);setCategoryCandidates(Array.isArray(res.data.categoryCandidates)?res.data.categoryCandidates:[]);setSettings(res.data.settings);}catch(e){console.error(e)}finally{setLoading(false)}})()},[slug]);
+  const now=new Date(), start=settings?.votingStart?new Date(settings.votingStart):null, end=settings?.votingEnd?new Date(settings.votingEnd):null, votingActive=!!(start&&end&&now>=start&&now<=end);
+  const voterToken=()=>{const key="awardvote_voter_token";let t=localStorage.getItem(key);if(!t){t=crypto.randomUUID();localStorage.setItem(key,t)}return t};
+  async function handleVote(id:string){setVotingFor(id);setVoteMessage("");try{const res=await API.post("/votes",{candidateId:id,voterToken:voterToken()});const total=res.data?.vote?.total_votes;setCategoryCandidates(items=>items.map(x=>x._id===id&&typeof total==="number"?{...x,votes:total}:x));setVoteMessage("Vote recorded successfully. Thank you for participating.")}catch(e:any){setVoteMessage(e?.response?.data?.message||"Your vote could not be recorded.")}finally{setVotingFor(null)}}
 
-  const [candidate, setCandidate] = useState<Candidate | null>(null);
-  const [categoryCandidates, setCategoryCandidates] = useState<Candidate[]>([]);
-  const [settings, setSettings] = useState<Settings | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [votingFor, setVotingFor] = useState<string | null>(null);
-  const [voteMessage, setVoteMessage] = useState("");
+  if(loading)return <div className="grid min-h-screen place-items-center bg-[#f7f8fc]"><div className="text-center"><div className="mx-auto mb-4 grid h-12 w-12 animate-pulse place-items-center rounded-2xl bg-primary text-white"><Vote/></div><p className="text-sm text-slate-500">Preparing your ballot...</p></div></div>;
+  if(!candidate)return <div className="grid min-h-screen place-items-center bg-[#f7f8fc] px-4"><div className="max-w-md rounded-3xl border bg-white p-8 text-center shadow-sm"><h1 className="text-2xl font-bold">Candidate not found</h1><p className="mt-2 text-sm text-slate-500">This voting link may be invalid or no longer available.</p><Link to="/" className="mt-6 inline-flex text-sm font-semibold text-primary">Return home</Link></div></div>;
 
-  useEffect(() => {
-    async function fetchCandidate() {
-      try {
-        const res = await API.get(`/candidates/public/${slug}`);
-        setCandidate(res.data.candidate);
-        setCategoryCandidates(res.data.categoryCandidates || []);
-        setSettings(res.data.settings);
-      } catch (error) {
-        console.error(error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    fetchCandidate();
-  }, [slug]);
+  return <div className="min-h-screen bg-[#f7f8fc] text-slate-900">
+    <header className="sticky top-0 z-30 border-b bg-white/90 backdrop-blur-xl"><div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6"><Link to="/" className="flex items-center gap-2.5"><div className="grid h-9 w-9 place-items-center rounded-xl bg-primary text-white"><Vote size={18}/></div><div><p className="text-sm font-bold">AwardVote</p><p className="text-[10px] text-slate-400">Secure digital voting</p></div></Link><Link to="/" className="flex items-center gap-2 text-sm font-semibold text-slate-500 hover:text-slate-900"><ArrowLeft size={16}/>Exit ballot</Link></div></header>
 
-  const now = new Date();
-  const votingStart = settings?.votingStart ? new Date(settings.votingStart) : null;
-  const votingEnd = settings?.votingEnd ? new Date(settings.votingEnd) : null;
-  const votingActive = votingStart && votingEnd ? now >= votingStart && now <= votingEnd : false;
+    <section className="relative overflow-hidden bg-[#11152b] text-white"><div className="absolute inset-0 voting-grid opacity-30"/><div className="absolute -right-20 -top-20 h-72 w-72 rounded-full bg-violet-500/25 blur-3xl"/><div className="relative mx-auto max-w-7xl px-4 py-12 sm:px-6 sm:py-16"><div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between"><div><span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs font-semibold text-violet-200"><span className={`h-2 w-2 rounded-full ${votingActive?"bg-emerald-400":"bg-amber-400"}`}/>{votingActive?"Voting is live":"Voting is not active"}</span><p className="mt-6 text-sm font-semibold uppercase tracking-[.2em] text-violet-300">{candidate.department||"Official ballot"}</p><h1 className="mt-2 text-3xl font-bold tracking-tight sm:text-5xl">{candidate.category}</h1><p className="mt-3 max-w-2xl text-sm leading-6 text-slate-300">Review the candidates below and cast your vote securely. Your selection is recorded once it is confirmed.</p></div><div className="grid grid-cols-2 gap-3 sm:flex"><div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"><p className="text-[10px] uppercase tracking-wider text-slate-400">Candidates</p><p className="mt-1 text-xl font-bold">{categoryCandidates.length}</p></div><div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3"><p className="text-[10px] uppercase tracking-wider text-slate-400">Security</p><p className="mt-1 flex items-center gap-1.5 text-sm font-bold"><ShieldCheck size={16} className="text-emerald-400"/>Protected</p></div></div></div></div></section>
 
-  function getVoterToken() {
-    const key = "awardvote_voter_token";
-    let token = localStorage.getItem(key);
-    if (!token) { token = crypto.randomUUID(); localStorage.setItem(key, token); }
-    return token;
-  }
+    <main className="mx-auto max-w-7xl space-y-8 px-4 py-8 sm:px-6 sm:py-10">
+      <div className="flex flex-col gap-3 rounded-2xl border bg-white p-4 shadow-sm sm:flex-row sm:items-center sm:justify-between"><div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-xl bg-violet-50 text-primary"><Clock3 size={18}/></div><div><p className="text-sm font-semibold">Voting window</p><p className="text-xs text-slate-500">{start?start.toLocaleString():"Start not set"} — {end?end.toLocaleString():"End not set"}</p></div></div><span className={`w-fit rounded-full px-3 py-1 text-xs font-semibold ${votingActive?"bg-emerald-50 text-emerald-700":"bg-amber-50 text-amber-700"}`}>{votingActive?"Open for voting":"Currently closed"}</span></div>
+      {voteMessage&&<div className="flex items-center gap-3 rounded-2xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-800"><CheckCircle2 size={19}/>{voteMessage}</div>}
 
-  async function handleVote(candidateId: string) {
-    setVotingFor(candidateId); setVoteMessage("");
-    try {
-      const res = await API.post("/votes", { candidateId, voterToken: getVoterToken() });
-      const total = res.data?.vote?.total_votes;
-      setCategoryCandidates((items) => items.map((item) => item._id === candidateId && typeof total === "number" ? { ...item, votes: total } : item));
-      setVoteMessage("Your vote has been recorded successfully.");
-    } catch (error: any) {
-      setVoteMessage(error?.response?.data?.message || "Your vote could not be recorded.");
-    } finally { setVotingFor(null); }
-  }
+      <div><div className="mb-5"><p className="text-xl font-bold">Choose your candidate</p><p className="mt-1 text-sm text-slate-500">Select one candidate from this category.</p></div><div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">{categoryCandidates.map(item=><article key={item._id} className={`group overflow-hidden rounded-2xl border bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-xl hover:shadow-slate-200/70 ${item.slug===candidate.slug?"ring-2 ring-primary/30":""}`}><div className="relative aspect-[4/4.5] overflow-hidden bg-slate-100"><img src={getImageUrl(item.image)} alt={item.name} className="h-full w-full object-cover transition duration-500 group-hover:scale-[1.03]"/>{item.slug===candidate.slug&&<span className="absolute left-3 top-3 rounded-full bg-white/95 px-3 py-1 text-[10px] font-bold text-primary shadow-sm">YOUR LINK</span>}</div><div className="p-4"><h2 className="text-lg font-bold tracking-tight">{item.name}</h2><p className="mt-1 text-xs text-slate-500">{item.department||item.category}</p>{settings?.candidateCanViewVotes&&<p className="mt-3 text-xs font-semibold text-slate-400"><span className="text-base font-bold text-slate-900">{Number(item.votes||0).toLocaleString()}</span> votes</p>}{item.bio&&<p className="mt-3 line-clamp-2 text-xs leading-5 text-slate-500">{item.bio}</p>}<button disabled={!votingActive||votingFor!==null} onClick={()=>handleVote(item._id)} className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl bg-primary px-4 py-3 text-sm font-bold text-white transition hover:brightness-110 disabled:cursor-not-allowed disabled:bg-slate-200 disabled:text-slate-500"><Vote size={16}/>{votingFor===item._id?"Recording vote...":votingActive?"Vote for candidate":"Voting closed"}</button></div></article>)}</div></div>
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-muted/30 px-4 py-10">
-        <div className="mx-auto max-w-7xl">
-          <Card>
-            <CardContent className="p-10 text-center text-muted-foreground">
-              Loading candidates...
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  if (!candidate) {
-    return (
-      <div className="min-h-screen bg-muted/30 px-4 py-10">
-        <div className="mx-auto max-w-7xl">
-          <Card>
-            <CardContent className="p-10 text-center">
-              <h1 className="text-2xl font-semibold">Candidate not found</h1>
-              <p className="mt-2 text-muted-foreground">
-                The candidate you are trying to view does not exist.
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-muted/30">
-      {/* Public navbar */}
-      <header className="border-b bg-background">
-        <div className="mx-auto flex h-14 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-              <Vote size={16} />
-            </div>
-            <span className="text-sm font-semibold">AwardVote</span>
-          </Link>
-          <Button variant="ghost" size="sm" render={<Link to="/" />}>
-            <ArrowLeft size={14} className="mr-2" />
-            Back to Home
-          </Button>
-        </div>
-      </header>
-
-      <div className="mx-auto max-w-7xl space-y-6 px-4 py-8 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="text-center">
-          <p className="text-sm font-semibold uppercase tracking-widest text-primary">
-            Award Category
-          </p>
-          <h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-4xl">
-            {candidate.category}
-          </h1>
-          <p className="mt-2 text-sm text-muted-foreground">
-            Candidates competing in the same award category appear below.
-          </p>
-        </div>
-
-        {/* Stats */}
-        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-muted-foreground">Total Candidates</p>
-              <p className="mt-1 text-3xl font-semibold">{categoryCandidates.length}</p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-muted-foreground">Voting Status</p>
-              <p className={`mt-1 text-2xl font-semibold ${votingActive ? "text-emerald-600" : "text-amber-600"}`}>
-                {votingActive ? "Active" : "Not Active"}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-muted-foreground">Voting Start</p>
-              <p className="mt-1 text-sm font-semibold">
-                {settings?.votingStart ? new Date(settings.votingStart).toLocaleString() : "Not set"}
-              </p>
-            </CardContent>
-          </Card>
-          <Card>
-            <CardContent className="p-5">
-              <p className="text-sm font-medium text-muted-foreground">Voting End</p>
-              <p className="mt-1 text-sm font-semibold">
-                {settings?.votingEnd ? new Date(settings.votingEnd).toLocaleString() : "Not set"}
-              </p>
-            </CardContent>
-          </Card>
-        </div>
-
-        {voteMessage && <Card><CardContent className="p-4 text-center text-sm font-medium">{voteMessage}</CardContent></Card>}
-
-        {/* Candidate cards */}
-        <div className="grid gap-6 sm:grid-cols-1 md:grid-cols-2 xl:grid-cols-3">
-          {categoryCandidates.map((item) => (
-            <Card
-              key={item._id}
-              className={`group overflow-hidden transition-shadow hover:shadow-md ${
-                item.slug === candidate.slug ? "border-primary ring-2 ring-primary/20" : ""
-              }`}
-            >
-              <div className="relative h-64 w-full overflow-hidden bg-muted">
-                <img
-                  src={getImageUrl(item.image)}
-                  alt={item.name}
-                  className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
-                />
-                {item.slug === candidate.slug && (
-                  <Badge className="absolute left-3 top-3">Current Candidate</Badge>
-                )}
-              </div>
-
-              <CardContent className="space-y-4 p-5">
-                <div>
-                  <h2 className="text-xl font-semibold tracking-tight">{item.name}</h2>
-                  <p className="mt-1 text-sm text-muted-foreground">{item.department}</p>
-                </div>
-
-                <div className="rounded-lg bg-muted p-4">
-                  <p className="text-xs font-medium uppercase tracking-wide text-muted-foreground">
-                    Votes
-                  </p>
-                  <p className="mt-1 text-2xl font-semibold">
-                    {settings?.candidateCanViewVotes ? item.votes : "--"}
-                  </p>
-                </div>
-
-                <Button className="w-full" disabled={!votingActive || votingFor !== null} onClick={() => handleVote(item._id)}>
-                  <Vote size={16} className="mr-2" />
-                  {votingFor === item._id ? "Recording Vote..." : votingActive ? "Vote for this Candidate" : "Voting Not Active"}
-                </Button>
-
-                {item.bio && (
-                  <div className="rounded-lg bg-muted p-4">
-                    <p className="text-sm leading-6 text-muted-foreground">{item.bio}</p>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-
-        {/* Chart or hidden notice */}
-        {settings?.candidateCanViewVotes ? (
-          <Card>
-            <CardHeader>
-              <CardTitle>Category Comparison Graph</CardTitle>
-              <CardDescription>
-                Compare vote progress for all candidates in this category over time.
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              <CategoryComparisonChart candidates={categoryCandidates} />
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="border-amber-200 bg-amber-50">
-            <CardContent className="p-6">
-              <h2 className="font-semibold text-amber-800">
-                Vote visibility is currently hidden
-              </h2>
-              <p className="mt-2 text-sm text-amber-700">
-                Candidate cards are visible, but vote totals and graphs are currently hidden.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </div>
-    </div>
-  );
+      {settings?.candidateCanViewVotes&&<section className="rounded-2xl border bg-white p-5 shadow-sm sm:p-6"><div className="mb-5"><h2 className="font-bold">Category performance</h2><p className="mt-1 text-sm text-slate-500">Live comparison of visible vote totals.</p></div><CategoryComparisonChart candidates={categoryCandidates}/></section>}
+    </main>
+    <footer className="border-t bg-white"><div className="mx-auto flex max-w-7xl flex-col gap-2 px-4 py-6 text-xs text-slate-400 sm:flex-row sm:items-center sm:justify-between sm:px-6"><span>Powered by AwardVote</span><span>Secure • Transparent • Auditable</span></div></footer>
+  </div>;
 }
