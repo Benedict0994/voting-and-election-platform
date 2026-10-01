@@ -8,4 +8,7 @@ export const env = {
   SUPABASE_URL: process.env.SUPABASE_URL || "",
   SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY || "",
   SUPABASE_STORAGE_BUCKET: process.env.SUPABASE_STORAGE_BUCKET || "candidate-images",
+  PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || "",
+  VOTE_PRICE_MINOR: Number(process.env.VOTE_PRICE_MINOR || 100),
+  PAYMENT_CURRENCY: process.env.PAYMENT_CURRENCY || "GHS",
 };
