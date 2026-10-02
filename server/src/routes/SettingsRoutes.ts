@@ -1,10 +1,1 @@
-import { Router } from "express";
-import { getSettings, updateSettings } from "../controllers/settingsController";
-import { protect } from "../middleware/authMiddleware";
-
-const router = Router();
-
-router.get("/", protect, getSettings);
-router.put("/", protect, updateSettings);
-
-export default router;
+import{Router}from"express";import{getSettings,updateSettings}from"../controllers/settingsController";import{protect}from"../middleware/authMiddleware";import{requireEventRole}from"../middleware/eventAccess";const router=Router();router.get("/",protect,requireEventRole("owner","admin","finance","viewer"),getSettings);router.put("/",protect,requireEventRole("owner","admin"),updateSettings);export default router;
