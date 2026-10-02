@@ -1,0 +1,1 @@
+import{Router}from"express";import{protect}from"../middleware/authMiddleware";import{requireEventRole}from"../middleware/eventAccess";import{getCandidateAnalytics}from"../controllers/analyticsController";const router=Router();router.use(protect);router.get("/candidates/:id",requireEventRole("owner","admin","finance","viewer"),getCandidateAnalytics);export default router;
