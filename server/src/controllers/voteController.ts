@@ -3,6 +3,7 @@ import type { Request, Response } from "express";
 import type { AuthRequest } from "../middleware/authMiddleware";
 import { supabase } from "../lib/supabase";
 import { env } from "../config/env";
+import { writeAudit } from "../utils/auditLog";
 
 function hash(value: string) {
   return crypto.createHmac("sha256", env.JWT_SECRET).update(value).digest("hex");
@@ -53,6 +54,7 @@ export async function adjustVotes(req: AuthRequest, res: Response) {
       p_reason: reason,
     });
     if (error) throw error;
+    await writeAudit({awardSpace:req.user.awardSpace,adminId:req.user.id,req,action:"votes.adjusted",entityType:"candidate",entityId:candidateId,details:{delta,reason,adjustment:data?.[0]??null}});
     return res.json({ message: "Vote adjustment recorded", adjustment: data?.[0] ?? null });
   } catch (error: any) {
     console.error(error);
