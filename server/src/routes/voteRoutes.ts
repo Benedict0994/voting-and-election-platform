@@ -1,7 +1,1 @@
-import { Router } from "express";
-import { castVote, getVoteAudit } from "../controllers/voteController";
-import { protect } from "../middleware/authMiddleware";
-const router = Router();
-router.post("/", castVote);
-router.get("/audit", protect, getVoteAudit);
-export default router;
+import{Router}from"express";import{castVote,getVoteAudit}from"../controllers/voteController";import{protect}from"../middleware/authMiddleware";import{requireEventRole}from"../middleware/eventAccess";const router=Router();router.post("/",castVote);router.get("/audit",protect,requireEventRole("owner","admin","finance","viewer"),getVoteAudit);export default router;
