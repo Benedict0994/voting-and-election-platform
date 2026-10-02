@@ -17,4 +17,5 @@ export const env = {
   SMTP_USER: process.env.SMTP_USER || "",
   SMTP_PASS: process.env.SMTP_PASS || "",
   SMTP_FROM: process.env.SMTP_FROM || "",
+  VOTER_AUTH_SECRET: process.env.VOTER_AUTH_SECRET || process.env.JWT_SECRET || "",
 };
