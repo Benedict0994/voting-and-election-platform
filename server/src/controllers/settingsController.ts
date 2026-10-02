@@ -1,30 +1,4 @@
-import { Response } from "express";
-import { supabase } from "../lib/supabase";
-import type { AuthRequest } from "../middleware/authMiddleware";
-
-const shape = (s: any) => ({ _id: s.id, votingStart: s.voting_start, votingEnd: s.voting_end, candidateCanViewVotes: s.candidate_can_view_votes, awardSpace: s.award_space_id, createdAt: s.created_at, updatedAt: s.updated_at });
-
-export async function getSettings(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user?.awardSpace) return res.status(401).json({ message: "Unauthorized" });
-    let { data, error } = await supabase.from("settings").select("*").eq("award_space_id", req.user.awardSpace).maybeSingle();
-    if (error) throw error;
-    if (!data) {
-      const created = await supabase.from("settings").insert({ award_space_id: req.user.awardSpace, voting_start: null, voting_end: null, candidate_can_view_votes: true }).select("*").single();
-      if (created.error) throw created.error; data = created.data;
-    }
-    return res.json(shape(data));
-  } catch (error) { console.error(error); return res.status(500).json({ message: "Failed to fetch settings" }); }
-}
-
-export async function updateSettings(req: AuthRequest, res: Response) {
-  try {
-    if (!req.user?.awardSpace) return res.status(401).json({ message: "Unauthorized" });
-    const { votingStart, votingEnd, candidateCanViewVotes } = req.body;
-    const payload: any = { award_space_id: req.user.awardSpace, voting_start: votingStart ?? null, voting_end: votingEnd ?? null, updated_at: new Date().toISOString() };
-    if (typeof candidateCanViewVotes === "boolean") payload.candidate_can_view_votes = candidateCanViewVotes;
-    const result = await supabase.from("settings").upsert(payload, { onConflict: "award_space_id" }).select("*").single();
-    if (result.error) throw result.error;
-    return res.json(shape(result.data));
-  } catch (error) { console.error(error); return res.status(500).json({ message: "Failed to update settings" }); }
-}
+import{Response}from"express";import{supabase}from"../lib/supabase";import type{AuthRequest}from"../middleware/authMiddleware";
+const shape=(s:any)=>({_id:s.id,votingStart:s.voting_start,votingEnd:s.voting_end,candidateCanViewVotes:s.candidate_can_view_votes,votePriceMinor:s.vote_price_minor??100,currency:s.currency||"GHS",votePackages:Array.isArray(s.vote_packages)?s.vote_packages:[],awardSpace:s.award_space_id,createdAt:s.created_at,updatedAt:s.updated_at});
+export async function getSettings(req:AuthRequest,res:Response){try{if(!req.user?.awardSpace)return res.status(401).json({message:"Unauthorized"});let{data,error}=await supabase.from("settings").select("*").eq("award_space_id",req.user.awardSpace).maybeSingle();if(error)throw error;if(!data){const c=await supabase.from("settings").insert({award_space_id:req.user.awardSpace,voting_start:null,voting_end:null,candidate_can_view_votes:true,vote_price_minor:100,currency:"GHS"}).select("*").single();if(c.error)throw c.error;data=c.data}return res.json(shape(data))}catch(e){console.error(e);return res.status(500).json({message:"Failed to fetch settings"})}}
+export async function updateSettings(req:AuthRequest,res:Response){try{if(!req.user?.awardSpace)return res.status(401).json({message:"Unauthorized"});const{votingStart,votingEnd,candidateCanViewVotes,votePriceMinor,currency,votePackages}=req.body;const price=Number(votePriceMinor);if(votePriceMinor!==undefined&&(!Number.isInteger(price)||price<1))return res.status(400).json({message:"Vote price must be a positive amount"});const packages=Array.isArray(votePackages)?votePackages.map((p:any)=>({votes:Number(p.votes),amount_minor:Number(p.amount_minor)})).filter((p:any)=>Number.isInteger(p.votes)&&p.votes>0&&Number.isInteger(p.amount_minor)&&p.amount_minor>0):undefined;const payload:any={award_space_id:req.user.awardSpace,voting_start:votingStart??null,voting_end:votingEnd??null,updated_at:new Date().toISOString()};if(typeof candidateCanViewVotes==="boolean")payload.candidate_can_view_votes=candidateCanViewVotes;if(votePriceMinor!==undefined)payload.vote_price_minor=price;if(currency)payload.currency=String(currency).toUpperCase();if(packages)payload.vote_packages=packages;const r=await supabase.from("settings").upsert(payload,{onConflict:"award_space_id"}).select("*").single();if(r.error)throw r.error;return res.json(shape(r.data))}catch(e){console.error(e);return res.status(500).json({message:"Failed to update settings"})}}
