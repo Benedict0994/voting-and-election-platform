@@ -52,6 +52,9 @@ export async function signup(req: Request, res: Response) {
     }).select("*").single();
     if (error) throw error;
 
+    const membership = await supabase.from("admin_award_spaces").upsert({ admin_id: admin.id, award_space_id: awardSpace.id, role: "owner" }, { onConflict: "admin_id,award_space_id" });
+    if (membership.error) throw membership.error;
+
     await sendTemplateEmail({ templateName: "otp", templateProps: { otp }, subject: "Verify Your Email - AwardVote", to: email });
     return res.status(201).json({ message: "Signup successful. OTP sent to your email.", adminId: admin.id, email: admin.email, requiresVerification: true });
   } catch (error) { console.error(error); return res.status(500).json({ message: "Signup failed" }); }
