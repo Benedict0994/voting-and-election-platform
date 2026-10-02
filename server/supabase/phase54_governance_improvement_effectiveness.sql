@@ -1,0 +1,10 @@
+alter table public.election_governance_improvement_actions add column if not exists completion_note text;
+alter table public.election_governance_improvement_actions add column if not exists completion_score integer check(completion_score between 0 and 100);
+alter table public.election_governance_improvement_actions add column if not exists completed_by uuid references public.admins(id) on delete set null;
+alter table public.election_governance_improvement_actions add column if not exists verification_score integer check(verification_score between 0 and 100);
+alter table public.election_governance_improvement_actions add column if not exists verification_note text;
+alter table public.election_governance_improvement_actions add column if not exists effectiveness text check(effectiveness in('effective','partially_effective','ineffective'));
+alter table public.election_governance_improvement_actions add column if not exists follow_up_required boolean not null default false;
+create table if not exists public.election_governance_improvement_reviews(id uuid primary key default gen_random_uuid(),award_space_id uuid not null references public.award_spaces(id) on delete cascade,improvement_action_id uuid not null references public.election_governance_improvement_actions(id) on delete cascade,review_type text not null check(review_type in('completion','effectiveness_verification')),score integer check(score between 0 and 100),effectiveness text check(effectiveness in('effective','partially_effective','ineffective')),note text not null,reviewed_by uuid references public.admins(id) on delete set null,reviewed_at timestamptz not null default now());
+create index if not exists election_governance_improvement_reviews_idx on public.election_governance_improvement_reviews(award_space_id,improvement_action_id,reviewed_at desc);
+alter table public.election_governance_improvement_reviews enable row level security;
