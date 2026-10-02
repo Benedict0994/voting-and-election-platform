@@ -1,0 +1,12 @@
+import { Router } from "express";
+import { protect } from "../middleware/authMiddleware";
+import { requireEventRole } from "../middleware/eventAccess";
+import { addMember,getAuditLogs,getTeam,removeMember,updateMember } from "../controllers/teamController";
+const router=Router();
+router.use(protect);
+router.get("/",getTeam);
+router.get("/audit/logs",requireEventRole("owner","admin","finance","viewer"),getAuditLogs);
+router.post("/",requireEventRole("owner"),addMember);
+router.patch("/:id",requireEventRole("owner"),updateMember);
+router.delete("/:id",requireEventRole("owner"),removeMember);
+export default router;
