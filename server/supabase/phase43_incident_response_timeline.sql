@@ -1,0 +1,4 @@
+-- Phase 43: incident response notes, evidence references and action timeline
+create table if not exists public.election_incident_timeline(id uuid primary key default gen_random_uuid(),award_space_id uuid not null references public.award_spaces(id) on delete cascade,incident_id uuid not null references public.election_incidents(id) on delete cascade,entry_type text not null check(entry_type in('note','evidence','action')),title text not null,body text not null,evidence_url text,evidence_label text,created_by uuid references public.admins(id) on delete set null,created_at timestamptz not null default now());
+create index if not exists election_incident_timeline_idx on public.election_incident_timeline(award_space_id,incident_id,created_at desc);
+alter table public.election_incident_timeline enable row level security;
