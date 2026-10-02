@@ -7,3 +7,5 @@ test("new candidate voting codes use six digits",()=>{const s=read("controllers/
 
 test("navigation does not default missing role to owner",()=>{const s=read("../client/src/components/layout/Sidebar.tsx");assert.ok(!s.includes('eventRole||"owner"'))});
 test("election backups exclude voter codes and external ids",()=>{const s=read("controllers/electionBackupController.ts");assert.ok(!s.includes('id,voter_code,external_id,is_eligible'))});
+
+test("production startup validates critical secrets and URLs",()=>{const s=read("server.ts");for(const token of["validateProductionEnvironment","SUPABASE_SERVICE_ROLE_KEY","JWT_SECRET (minimum 32 characters)","VOTER_AUTH_SECRET (minimum 32 characters)","ELECTION_MONITOR_SECRET (minimum 32 characters)","production URL required"])assert.ok(s.includes(token))});
