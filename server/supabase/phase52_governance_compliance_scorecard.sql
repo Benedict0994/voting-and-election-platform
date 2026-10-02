@@ -1,0 +1,3 @@
+create table if not exists public.election_governance_scorecards(id uuid primary key default gen_random_uuid(),award_space_id uuid not null references public.award_spaces(id) on delete cascade,score integer not null check(score between 0 and 100),risk_review_score integer not null,incident_response_score integer not null,preventive_action_score integer not null,reporting_score integer not null,accountability_score integer not null,metrics jsonb not null default '{}'::jsonb,calculated_at timestamptz not null default now());
+create index if not exists election_governance_scorecards_idx on public.election_governance_scorecards(award_space_id,calculated_at desc);
+alter table public.election_governance_scorecards enable row level security;
