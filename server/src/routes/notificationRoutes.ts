@@ -1,0 +1,1 @@
+import{Router}from"express";import{protect}from"../middleware/authMiddleware";import{requireEventRole}from"../middleware/eventAccess";import{getNotifications}from"../controllers/notificationController";const router=Router();router.use(protect);router.get("/",requireEventRole("owner","admin","finance","viewer"),getNotifications);export default router;
