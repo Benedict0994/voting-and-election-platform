@@ -64,7 +64,7 @@ export async function getVoteAudit(req: AuthRequest, res: Response) {
   try {
     if (!req.user?.awardSpace) return res.status(401).json({ message: "Unauthorized" });
     const [votes, adjustments] = await Promise.all([
-      supabase.from("votes").select("id,candidate_id,category,quantity,status,payment_provider,payment_reference,amount_minor,currency,created_at,confirmed_at").eq("award_space_id", req.user.awardSpace).order("created_at", { ascending: false }).limit(500),
+      supabase.from("votes").select("id,candidate_id,candidate_code,category,quantity,status,payment_provider,payment_reference,amount_minor,currency,payment_channel,provider_status,last_reconciled_at,provider_paid_at,created_at,confirmed_at,candidates(name,voting_code)").eq("award_space_id", req.user.awardSpace).order("created_at", { ascending: false }).limit(500),
       supabase.from("vote_adjustments").select("id,candidate_id,admin_id,delta,reason,previous_total,new_total,created_at").eq("award_space_id", req.user.awardSpace).order("created_at", { ascending: false }).limit(500),
     ]);
     if (votes.error) throw votes.error;
