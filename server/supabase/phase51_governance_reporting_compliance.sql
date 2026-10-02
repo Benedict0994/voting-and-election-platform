@@ -1,0 +1,5 @@
+alter table public.award_spaces add column if not exists governance_report_due_alert_days integer not null default 3 check(governance_report_due_alert_days between 0 and 30);
+alter table public.award_spaces add column if not exists governance_last_report_due_alert_at timestamptz;
+create table if not exists public.election_governance_reporting_compliance(id uuid primary key default gen_random_uuid(),award_space_id uuid not null references public.award_spaces(id) on delete cascade,due_date date not null,frequency text not null,status text not null check(status in('upcoming','due','overdue','submitted','approved','distributed','missed')),report_id uuid references public.election_governance_reports(id) on delete set null,first_alerted_at timestamptz,last_checked_at timestamptz not null default now(),completed_at timestamptz,unique(award_space_id,due_date));
+create index if not exists election_governance_reporting_compliance_idx on public.election_governance_reporting_compliance(award_space_id,due_date desc,status);
+alter table public.election_governance_reporting_compliance enable row level security;
