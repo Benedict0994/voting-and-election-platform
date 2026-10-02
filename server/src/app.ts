@@ -6,6 +6,7 @@ import settingsRoutes from "./routes/SettingsRoutes";
 import voteRoutes from "./routes/voteRoutes";
 import paymentRoutes from "./routes/paymentRoutes";
 import eventRoutes from "./routes/eventRoutes";
+import teamRoutes from "./routes/teamRoutes";
 import { paystackWebhook } from "./controllers/paymentController";
 import { env } from "./config/env";
 const app=express();
@@ -14,6 +15,7 @@ app.post("/api/payments/webhook/paystack",express.raw({type:"application/json"})
 app.use(express.json());
 app.use("/api/auth",authRoutes);
 app.use("/api/events",eventRoutes);
+app.use("/api/team",teamRoutes);
 app.use("/api/candidates",candidateRoutes);
 app.use("/api/settings",settingsRoutes);
 app.use("/api/votes",voteRoutes);
