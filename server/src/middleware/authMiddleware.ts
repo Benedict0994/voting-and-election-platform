@@ -12,6 +12,7 @@ export interface AuthRequest extends Request {
 }
 
 export function protect(req: AuthRequest, res: Response, next: NextFunction) {
+  if (!env.JWT_SECRET || env.JWT_SECRET.length < 32) return res.status(503).json({ message: "Server authentication is not securely configured" });
   const authHeader = req.headers.authorization;
 
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -30,7 +31,10 @@ export function protect(req: AuthRequest, res: Response, next: NextFunction) {
       email: string;
       name: string;
       awardSpace: string;
+      exp?: number;
     };
+
+    if (!decoded.id || !decoded.email || !decoded.awardSpace) return res.status(401).json({ message: "Invalid token claims" });
 
     req.user = {
       id: decoded.id,
