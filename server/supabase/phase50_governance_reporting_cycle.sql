@@ -1,0 +1,10 @@
+alter table public.award_spaces add column if not exists governance_reporting_enabled boolean not null default true;
+alter table public.award_spaces add column if not exists governance_reporting_frequency text not null default 'monthly' check(governance_reporting_frequency in('weekly','monthly','quarterly'));
+alter table public.award_spaces add column if not exists governance_next_report_date date;
+alter table public.election_governance_reports add column if not exists report_version integer;
+alter table public.election_governance_reports add column if not exists reporting_period_start date;
+alter table public.election_governance_reports add column if not exists reporting_period_end date;
+alter table public.election_governance_reports add column if not exists supersedes_report_id uuid references public.election_governance_reports(id) on delete set null;
+alter table public.election_governance_reports add column if not exists cycle_key text;
+create unique index if not exists election_governance_report_version_idx on public.election_governance_reports(award_space_id,report_version) where report_version is not null;
+create index if not exists election_governance_report_cycle_idx on public.election_governance_reports(award_space_id,cycle_key,report_version desc);
