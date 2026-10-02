@@ -11,4 +11,10 @@ export const env = {
   PAYSTACK_SECRET_KEY: process.env.PAYSTACK_SECRET_KEY || "",
   VOTE_PRICE_MINOR: Number(process.env.VOTE_PRICE_MINOR || 100),
   PAYMENT_CURRENCY: process.env.PAYMENT_CURRENCY || "GHS",
+  SMTP_HOST: process.env.SMTP_HOST || "",
+  SMTP_PORT: Number(process.env.SMTP_PORT || 587),
+  SMTP_SECURE: process.env.SMTP_SECURE === "true",
+  SMTP_USER: process.env.SMTP_USER || "",
+  SMTP_PASS: process.env.SMTP_PASS || "",
+  SMTP_FROM: process.env.SMTP_FROM || "",
 };
