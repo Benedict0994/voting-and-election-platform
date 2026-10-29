@@ -21,7 +21,6 @@ export default function VerifyEmail() {
 
   const [email, setEmail] = useState<string>(location.state?.email || "");
   const [codeRequested, setCodeRequested] = useState(Boolean(location.state?.email));
-  const adminId: string | undefined = location.state?.adminId;
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -51,7 +50,7 @@ export default function VerifyEmail() {
       }
 
       const res = await API.post("/auth/verify-otp", {
-        ...(adminId ? { adminId } : { email: email.trim().toLowerCase() }),
+        email: email.trim().toLowerCase(),
         otp,
       });
 
