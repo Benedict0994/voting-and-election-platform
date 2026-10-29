@@ -1,6 +1,2 @@
-/**
- * Generate a random 5-digit OTP
- */
-export function generateOTP(): string {
-  return Math.floor(10000 + Math.random() * 90000).toString();
-}
+import { randomInt } from "crypto";
+export function generateOTP(): string { return randomInt(10000, 100000).toString(); }
