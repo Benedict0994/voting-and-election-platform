@@ -19,16 +19,8 @@ export default function VerifyEmail() {
   const [canResend, setCanResend] = useState(false);
   const [timer, setTimer] = useState(0);
 
-  const adminId = location.state?.adminId;
-  const email = location.state?.email;
-
-  useEffect(() => {
-    // Redirect to signup if no adminId or email
-    if (!adminId || !email) {
-      navigate("/signup");
-      return;
-    }
-  }, [adminId, email, navigate]);
+  const [email, setEmail] = useState<string>(location.state?.email || "");
+  const [codeRequested, setCodeRequested] = useState(Boolean(location.state?.email));
 
   useEffect(() => {
     let interval: ReturnType<typeof setInterval> | null = null;
@@ -58,7 +50,7 @@ export default function VerifyEmail() {
       }
 
       const res = await API.post("/auth/verify-otp", {
-        adminId,
+        email: email.trim().toLowerCase(),
         otp,
       });
 
@@ -77,11 +69,11 @@ export default function VerifyEmail() {
     setResending(true);
 
     try {
-      await API.post("/auth/resend-otp", {
-        adminId,
-      });
+      if (!email.trim()) { toast.error("Enter your registered email"); return; }
+      await API.post("/auth/resend-otp", { email: email.trim().toLowerCase() });
+      setCodeRequested(true);
 
-      toast.success("OTP resent to your email");
+      toast.success("If your account is awaiting verification, a new code has been requested.");
       setTimer(60);
       setCanResend(false);
     } catch (error: any) {
@@ -90,10 +82,6 @@ export default function VerifyEmail() {
     } finally {
       setResending(false);
     }
-  }
-
-  if (!adminId || !email) {
-    return null;
   }
 
   return (
@@ -119,10 +107,19 @@ export default function VerifyEmail() {
             Verify Your Email
           </h1>
           <p className="mt-2 text-sm text-muted-foreground text-center">
-            We've sent a 5-digit OTP to <strong>{email}</strong>
+            {codeRequested ? <>Enter the 5-digit code sent to <strong>{email}</strong></> : "Enter your registered email to request a verification code."}
           </p>
 
-          <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+          <div className="mt-6 space-y-2">
+            <Label htmlFor="email">Registered email</Label>
+            <Input id="email" type="email" value={email} onChange={(e) => { setEmail(e.target.value); setCodeRequested(false); }}
+              placeholder="you@company.com" required />
+            <Button type="button" variant="outline" className="w-full" onClick={handleResend}
+              disabled={resending || !email.trim() || timer > 0}>
+              {resending ? "Requesting..." : timer > 0 ? `Request another code in ${timer}s` : "Send verification code"}
+            </Button>
+          </div>
+          {codeRequested && <form onSubmit={handleSubmit} className="mt-8 space-y-4">
             <div className="space-y-2">
               <Label htmlFor="otp" className="text-sm text-foreground">
                 Verification Code
@@ -156,7 +153,7 @@ export default function VerifyEmail() {
             >
               {loading ? "Verifying..." : "Verify Email"}
             </Button>
-          </form>
+          </form>}
 
           <div className="mt-6 border-t pt-6 text-center">
             <p className="text-sm text-muted-foreground">

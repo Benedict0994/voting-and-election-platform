@@ -31,7 +31,10 @@ export default function Login() {
       const message = axios.isAxiosError(error)
         ? error.response?.data?.message || "Invalid login details"
         : "Invalid login details";
-      toast.error(message);
+      if (axios.isAxiosError(error) && error.response?.status === 403) {
+        toast("Please verify your email before signing in.");
+        navigate("/verify-email", { state: { email } });
+      } else { toast.error(message); }
     } finally {
       setLoading(false);
     }
