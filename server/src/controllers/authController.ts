@@ -77,7 +77,7 @@ export async function verifyOTP(req: Request, res: Response) {
     const email = getSingleString(req.body.email)?.toLowerCase();
     const adminId = getSingleString(req.body.adminId);
     const otp = getSingleString(req.body.otp);
-    if ((!email && !adminId) || !otp || !/^\\d{5}$/.test(otp))
+    if ((!email && !adminId) || !otp || !/^\d{5}$/.test(otp))
       return res.status(400).json({ message: "Email and a five-digit code are required" });
     let query = supabase.from("admins").select("*");
     query = email ? query.eq("email", email) : query.eq("id", adminId!);
